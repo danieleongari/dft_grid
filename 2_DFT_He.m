@@ -11,8 +11,8 @@ clc
 % - use of LDA, PZ     to compute Ec
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-g = 20;        %grid points (must be even)
-b = 4;         %box length [a.u]      
+g = 60;        %grid points (must be even)
+b = 3;         %box length [a.u]      
 
 g3= g^3;       %grid in volume
 p = linspace(-b,+b,g);   
@@ -39,6 +39,7 @@ ncomppot = -2./R.*erf(R/sqrt(2));
 for iter=1:10 %not checking convergence criterion
     disp(['----------------------------- iteration #' num2str(iter) ]);
     
+    %EIGENVALUE 
     [PSI, E] = eigs(-0.5*L3+spdiags(Vtot, 0, g3, g3), 1, 'sa');
 
     PSI = PSI / h^(3/2); %Because we want to define the PSI such that Sum[PSI*PSI*h^3(volume element)] = 1
@@ -51,7 +52,7 @@ for iter=1:10 %not checking convergence criterion
     Eext = sum(n.*Vext)*h^3;                     %integrate External potential    
 
     %HARTREE
-    usemethod=2;
+    usemethod=1;
    %(method 1) Solving Poisson equation L3*Vh=-4*pi*n using conjugate gradient method: faster!
    if usemethod==1
     Vh = cgs(L3, -4*pi*(n+ncomp), 1e-7, 400)-ncomppot; %conj grad sparse
@@ -102,7 +103,7 @@ for iter=1:10 %not checking convergence criterion
     Vtot = Vext + Vh + Vx + Vc;
     Etot = 2*T + Eext + Eh + Ex + Ec;
 
-    disp(['Eigenvalue         ' num2str(E,5) ]);
+    disp(['Eigenvalue         ' num2str(E,5) ]);          %note that this is the energy solution of the non-interacting orbitals with Veff: reasonable in the first iteration (Veff=Vext), very big after!  
     disp(['Kinetic energy     ' num2str(T,5) ]);
     disp(['External energy    ' num2str(Eext,5) ]);
     disp(['Hartree energy     ' num2str(Eh,5) ]);
@@ -114,6 +115,9 @@ for iter=1:10 %not checking convergence criterion
 end
 
 disp('Remember: experm solution = -2.903 [a.u.]')
+
+%%REULTS USING METHOD 1 (Poisson)
+
 
 % g = 50;        %grid points           
 % b = 3;         %box length [a.u]      
@@ -166,3 +170,46 @@ disp('Remember: experm solution = -2.903 [a.u.]')
 % Correlation energy -0.11028
 % Total energy       -2.8019
 % 8min
+
+
+% g = 100;        %grid points (must be even)
+% b = 5;         %box length [a.u] 
+%----------------------------- iteration #10
+% cgs converged at iteration 264 to a solution with relative residual 6.2e-08.
+%Eigenvalue         -35068
+%Kinetic energy     1.3176
+%External energy    -6.4407
+%Hartree energy     1.9565
+%Exchange energy    -0.8442
+%Correlation energy -0.11
+%Total energy       -2.8032
+% 40min
+
+%%RESULTS USING METHOD 2 (integration)
+% g = 10;        %grid points           
+% b = 3;         %box length [a.u] 
+%----------------------------- iteration #10
+%Eigenvalue         -42.185
+%Kinetic energy     0.89993
+%External energy    -4.8731
+%Hartree energy     1.5507
+%Exchange energy    -0.77709
+%Correlation energy -0.10776
+%Total energy       -2.4073
+%1min
+
+% g = 20;        %grid points           
+% b = 3;         %box length [a.u] 
+%----------------------------- iteration #10
+%Eigenvalue         -333.71
+%Kinetic energy     1.2076
+%External energy    -6.0186
+%Hartree energy     1.8759
+%Exchange energy    -0.84489
+%Correlation energy -0.11061
+%Total energy       -2.6829
+% 3h
+
+%unfeasible to increase g more!
+
+
